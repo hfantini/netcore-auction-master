@@ -4,10 +4,37 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>.</DockerfileContext>
+    <Version>0.0.1</Version>
+    <Authors>Henrique Fantini</Authors>
+    <Company>-</Company>
+    <Description>Auction Master is a software with the objective to collect and process data from World of Warcraft's auction house. The idea behind this is display data and graphics about the market of each realm and analyse your movimentation.
+</Description>
+    <PackageId>AuctionMaster - Backend</PackageId>
+    <PackageProjectUrl>https://github.com/hfantini/auctionmaster</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/hfantini/auctionmaster</RepositoryUrl>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.1.1</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.5" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.8" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="App\Controller\" />
+    <Folder Include="App\DTO\" />
+    <Folder Include="App\DAO\" />
+    <Folder Include="App\Model\" />
+    <Folder Include="App\Enumeration\" />
+    <Folder Include="App\Interface\" />
+    <Folder Include="App\Service\" />
   </ItemGroup>
 
 </Project>
