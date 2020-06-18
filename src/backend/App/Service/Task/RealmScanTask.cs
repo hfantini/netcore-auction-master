@@ -1,3 +1,4 @@
+﻿
 /*
  *  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  *  
@@ -18,12 +19,23 @@
 // == IMPORTS
 // ==============================================================================
 
+using AuctionMaster.App.Model;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
 // == NAMESPACE
 // ==============================================================================
-
+namespace AuctionMaster.App.Service.Task
+{
     // == CLASS
     // ==========================================================================
-	
+
+    public class RealmScanTask : GenericScheduledTask
+    {
         // == DECLARATIONS
         // ======================================================================
 
@@ -34,11 +46,28 @@
         // == CONSTRUCTOR(S)
         // ======================================================================
 
+        public RealmScanTask(IServiceScopeFactory scopeFactory, ScheduledTask scheduledTask) : base(scopeFactory, scheduledTask)
+        {
+
+        }
+
         // == METHOD(S)
         // ======================================================================
+
+        protected override void onExecute(CancellationToken cancellationToken)
+        {
+            base.onExecute(cancellationToken);
+
+            for(int count = 0; count < 10000; count++)
+            {
+                Console.WriteLine($"{this._scheduledTask.StaName} | Execute:" + count);
+            }
+        }
 
         // == EVENT(S)
         // ======================================================================
 
         // == GETTER(S) AND SETTER(S)
         // ======================================================================
+    }
+}

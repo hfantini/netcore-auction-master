@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  *  
  *  == AUCTION MASTER ==
@@ -18,12 +18,25 @@
 // == IMPORTS
 // ==============================================================================
 
+using AuctionMaster.App.Enumeration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 // == NAMESPACE
 // ==============================================================================
+namespace AuctionMaster.App.Exception
+{
 
     // == CLASS
     // ==========================================================================
-	
+
+    /// <summary>
+    /// Defines an structure of expcetion related with task execution.
+    /// </summary>
+    public class AuctionMasterTaskException : AuctionMasterException
+    {
         // == DECLARATIONS
         // ======================================================================
 
@@ -34,6 +47,26 @@
         // == CONSTRUCTOR(S)
         // ======================================================================
 
+        /// <summary>
+        /// Class constructor
+        /// </summary>
+        /// <param name="message">Error message</param>
+        public AuctionMasterTaskException(ExceptionType type, String message) : base(type, message)
+        {
+
+        }
+
+
+        /// <summary>
+        /// Class constructor
+        /// </summary>
+        /// <param name="message">Error message</param>
+        /// <param name="innerException">Inner exception</param>
+        public AuctionMasterTaskException(ExceptionType type, String message, System.Exception innerException) : base(type, message, innerException)
+        {
+
+        }
+
         // == METHOD(S)
         // ======================================================================
 
@@ -42,3 +75,5 @@
 
         // == GETTER(S) AND SETTER(S)
         // ======================================================================
+    }
+}

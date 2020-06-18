@@ -30,11 +30,6 @@
   <ItemGroup>
     <Folder Include="App\Controller\" />
     <Folder Include="App\DTO\" />
-    <Folder Include="App\DAO\" />
-    <Folder Include="App\Model\" />
-    <Folder Include="App\Enumeration\" />
-    <Folder Include="App\Interface\" />
-    <Folder Include="App\Service\" />
   </ItemGroup>
 
 </Project>

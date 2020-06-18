@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AuctionMaster.App.Model;
+using AuctionMaster.App.Service.Task;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -50,9 +51,9 @@ namespace AuctionMaster.Backend
 
         // == CONST
 
-        public IConfiguration Configuration { get; }
-
         // == VAR
+        public IConfiguration Configuration { get; }
+        private IServiceCollection serviceColletion = null;
 
         // == CONSTRUCTOR(S)
         // ======================================================================
@@ -65,13 +66,18 @@ namespace AuctionMaster.Backend
         // == METHOD(S)
         // ======================================================================
 
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection serviceColletion)
         {
+            this.serviceColletion = serviceColletion;
+
             // ADD DATABASE CONTEXT
-            services.AddDbContext<DatabaseContext>(options => options.UseMySql( Configuration.GetConnectionString("AuctionMasterDatabase") ) );
+            this.serviceColletion.AddDbContext<DatabaseContext>(options => options.UseMySql( Configuration.GetConnectionString("AuctionMasterDatabase") ) );
 
             // ADD CONTROLLERS
-            services.AddControllers();
+            this.serviceColletion.AddControllers();
+
+            // ADD SERVICES
+            this.serviceColletion.AddSingleton<IScheduledTaskService, ScheduledTaskService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -80,6 +86,12 @@ namespace AuctionMaster.Backend
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // SERVICES
+            IScheduledTaskService scheduledTaskService = app.ApplicationServices.GetService<IScheduledTaskService>();
+            scheduledTaskService.initTaskService();
+
+            // HTTP
 
             //app.UseHttpsRedirection();
 

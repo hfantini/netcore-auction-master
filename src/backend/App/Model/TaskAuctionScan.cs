@@ -12,12 +12,14 @@ namespace AuctionMaster.App.Model
         }
 
         public int TasId { get; set; }
+        public int ScheduledTask { get; set; }
         public int ConnectedRealm { get; set; }
         public DateTime TasStarttime { get; set; }
         public DateTime TasEndtime { get; set; }
         public sbyte TasStatus { get; set; }
 
         public virtual ConnectedRealm ConnectedRealmNavigation { get; set; }
+        public virtual ScheduledTask ScheduledTaskNavigation { get; set; }
         public virtual ICollection<Auction> Auction { get; set; }
         public virtual ICollection<TaskAuctionScanLog> TaskAuctionScanLog { get; set; }
     }

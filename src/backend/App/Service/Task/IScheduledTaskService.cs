@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  *  
  *  == AUCTION MASTER ==
@@ -18,12 +18,25 @@
 // == IMPORTS
 // ==============================================================================
 
+using AuctionMaster.App.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 // == NAMESPACE
 // ==============================================================================
 
+namespace AuctionMaster.App.Service.Task
+{
     // == CLASS
     // ==========================================================================
-	
+
+    /// <summary>
+    /// Interface of ScheduledTaskService
+    /// </summary>
+    public interface IScheduledTaskService
+    {
         // == DECLARATIONS
         // ======================================================================
 
@@ -37,8 +50,12 @@
         // == METHOD(S)
         // ======================================================================
 
+        void initTaskService();
+
         // == EVENT(S)
         // ======================================================================
 
         // == GETTER(S) AND SETTER(S)
         // ======================================================================
+    }
+}
