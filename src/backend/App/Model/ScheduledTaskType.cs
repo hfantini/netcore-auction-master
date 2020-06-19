@@ -10,9 +10,9 @@ namespace AuctionMaster.App.Model
             ScheduledTask = new HashSet<ScheduledTask>();
         }
 
-        public int SttId { get; set; }
-        public string SttName { get; set; }
-        public string SttClass { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Class { get; set; }
 
         public virtual ICollection<ScheduledTask> ScheduledTask { get; set; }
     }

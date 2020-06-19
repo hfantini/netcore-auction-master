@@ -60,7 +60,7 @@ namespace AuctionMaster.App.Service.Task
 
             for(int count = 0; count < 10000; count++)
             {
-                Console.WriteLine($"{this._scheduledTask.StaName} | Execute:" + count);
+                Console.WriteLine($"{this._scheduledTask.Name} | Execute:" + count);
             }
         }
 

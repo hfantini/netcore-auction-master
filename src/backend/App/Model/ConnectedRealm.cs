@@ -11,7 +11,7 @@ namespace AuctionMaster.App.Model
             TaskAuctionScan = new HashSet<TaskAuctionScan>();
         }
 
-        public int CreId { get; set; }
+        public int Id { get; set; }
         public int RealmRegion { get; set; }
         public int RealmPopulation { get; set; }
 

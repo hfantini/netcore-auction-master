@@ -12,10 +12,11 @@ namespace AuctionMaster.App.Model
             TaskRealmScan = new HashSet<TaskRealmScan>();
         }
 
-        public int StaId { get; set; }
-        public string StaName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
         public int ScheduledTaskType { get; set; }
         public int SheduledTaskFrequency { get; set; }
+        public sbyte Enabled { get; set; }
 
         public virtual ScheduledTaskType ScheduledTaskTypeNavigation { get; set; }
         public virtual ScheduledTaskFrequency SheduledTaskFrequencyNavigation { get; set; }

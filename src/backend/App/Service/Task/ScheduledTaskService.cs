@@ -145,11 +145,11 @@ namespace AuctionMaster.App.Service.Task
 
                 if (task != null)
                 {
-                    this._scheduledTasks.Add(task.StaId, taskInstance);
+                    this._scheduledTasks.Add(task.Id, taskInstance);
                 }
                 else
                 {
-                    throw new AuctionMasterTaskException(ExceptionType.FATAL, $"The task ({task.StaName}) has a invalid type for initialization.");
+                    throw new AuctionMasterTaskException(ExceptionType.FATAL, $"The task ({task.Name}) has a invalid type for initialization.");
                 }
             }
         }

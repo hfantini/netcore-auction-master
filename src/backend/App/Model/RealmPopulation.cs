@@ -10,8 +10,8 @@ namespace AuctionMaster.App.Model
             ConnectedRealm = new HashSet<ConnectedRealm>();
         }
 
-        public int RpopId { get; set; }
-        public string RpopName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
 
         public virtual ICollection<ConnectedRealm> ConnectedRealm { get; set; }
     }

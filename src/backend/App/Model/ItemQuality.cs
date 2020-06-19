@@ -10,8 +10,8 @@ namespace AuctionMaster.App.Model
             Item = new HashSet<Item>();
         }
 
-        public int ItmqId { get; set; }
-        public string ItmqName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
 
         public virtual ICollection<Item> Item { get; set; }
     }

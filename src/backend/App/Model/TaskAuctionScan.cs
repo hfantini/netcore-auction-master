@@ -11,12 +11,12 @@ namespace AuctionMaster.App.Model
             TaskAuctionScanLog = new HashSet<TaskAuctionScanLog>();
         }
 
-        public int TasId { get; set; }
+        public int Id { get; set; }
         public int ScheduledTask { get; set; }
         public int ConnectedRealm { get; set; }
-        public DateTime TasStarttime { get; set; }
-        public DateTime TasEndtime { get; set; }
-        public sbyte TasStatus { get; set; }
+        public DateTime Starttime { get; set; }
+        public DateTime Endtime { get; set; }
+        public sbyte Status { get; set; }
 
         public virtual ConnectedRealm ConnectedRealmNavigation { get; set; }
         public virtual ScheduledTask ScheduledTaskNavigation { get; set; }

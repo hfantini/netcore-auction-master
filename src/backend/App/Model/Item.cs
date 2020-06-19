@@ -10,16 +10,16 @@ namespace AuctionMaster.App.Model
             Auction = new HashSet<Auction>();
         }
 
-        public int ItmId { get; set; }
-        public string ItmName { get; set; }
-        public int ItemQuality { get; set; }
-        public string ItmIcon { get; set; }
-        public sbyte ItmStackable { get; set; }
-        public int ItmLevelreq { get; set; }
-        public int ItmPurchasePrice { get; set; }
-        public int ItmSellPrice { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Quality { get; set; }
+        public string Icon { get; set; }
+        public sbyte Stackable { get; set; }
+        public int Levelreq { get; set; }
+        public int PurchasePrice { get; set; }
+        public int SellPrice { get; set; }
 
-        public virtual ItemQuality ItemQualityNavigation { get; set; }
+        public virtual ItemQuality QualityNavigation { get; set; }
         public virtual ICollection<Auction> Auction { get; set; }
     }
 }
