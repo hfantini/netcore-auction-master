@@ -33,9 +33,9 @@ namespace AuctionMaster.App.Exception
     // ==========================================================================
 
     /// <summary>
-    /// Defines an structure of generic exception to this application.
+    /// Defines an structure of expcetion related with blizzard API requests.
     /// </summary>
-    public class AuctionMasterException : System.Exception
+    public class AuctionMasterBlizzardException : AuctionMasterException
     {
         // == DECLARATIONS
         // ======================================================================
@@ -43,7 +43,6 @@ namespace AuctionMaster.App.Exception
         // == CONST
 
         // == VAR
-        private ExceptionType _type;
 
         // == CONSTRUCTOR(S)
         // ======================================================================
@@ -51,41 +50,21 @@ namespace AuctionMaster.App.Exception
         /// <summary>
         /// Class constructor
         /// </summary>
-        /// <param name="type">Exception Type</param>
         /// <param name="message">Error message</param>
-        public AuctionMasterException(ExceptionType type, String message) : base(message)
+        public AuctionMasterBlizzardException(ExceptionType type, String message) : base(type, message)
         {
-            this._type = type;
+
         }
+
 
         /// <summary>
         /// Class constructor
         /// </summary>
-        /// <param name="type">Exception Type</param>
         /// <param name="message">Error message</param>
         /// <param name="innerException">Inner exception</param>
-        public AuctionMasterException(ExceptionType type, String message, System.Exception innerException) : base(message, innerException)
+        public AuctionMasterBlizzardException(ExceptionType type, String message, System.Exception innerException) : base(type, message, innerException)
         {
-            this._type = type;
-        }
 
-        /// <summary>
-        /// Class constructor
-        /// </summary>
-        /// <param name="type">Exception Type</param>
-        /// <param name="innerException">Inner exception</param>
-        public AuctionMasterException(ExceptionType type, System.Exception innerException) : base(innerException.Message, innerException)
-        {
-            this._type = type;
-        }
-
-        /// <summary>
-        /// Class constructor
-        /// </summary>
-        /// <param name="type">Exception Type</param>
-        public AuctionMasterException(AuctionMasterException innerException) : base(innerException.Message, innerException)
-        {
-            this._type = innerException.type;
         }
 
         // == METHOD(S)
@@ -96,10 +75,5 @@ namespace AuctionMaster.App.Exception
 
         // == GETTER(S) AND SETTER(S)
         // ======================================================================
-
-        public ExceptionType type
-        {
-            get { return this._type; }
-        }
     }
 }

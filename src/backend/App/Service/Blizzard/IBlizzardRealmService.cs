@@ -18,6 +18,8 @@
 // == IMPORTS
 // ==============================================================================
 
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,16 +28,27 @@ using System.Threading.Tasks;
 // == NAMESPACE
 // ==============================================================================
 
-namespace AuctionMaster.App.Enumeration
+namespace AuctionMaster.App.Service.Blizzard
 {
-    // == CLASS
+    // == INTERFACE
     // ==========================================================================
-
-    public enum ScheduledTaskState
+    
+    /// <summary>
+    /// A service who handles requests related with World of Warcraft information
+    /// </summary>
+    public interface IBlizzardRealmService
     {
-        IDLE,
-        RUNNING,
-        CANCELLED,
-        ERROR
+        // == METHOD(S)
+        // ======================================================================
+
+        public Task<JObject> getConnectedRealmList(String region);
+        public Task<JObject> getConnectedRealmInformation(int id, string region);
+        //public Task<object> getRealmInformation();
+
+        // == EVENT(S)
+        // ======================================================================
+
+        // == GETTER(S) AND SETTER(S)
+        // ======================================================================
     }
 }

@@ -31,11 +31,8 @@ namespace AuctionMaster.App.Enumeration
     // == CLASS
     // ==========================================================================
 
-    public enum ScheduledTaskState
+    public enum ScheduledTaskFrequencyType
     {
-        IDLE,
-        RUNNING,
-        CANCELLED,
-        ERROR
+        INTERVAL = 1
     }
 }

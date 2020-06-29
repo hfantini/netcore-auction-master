@@ -16,7 +16,9 @@ namespace AuctionMaster.App.Model
         public string Name { get; set; }
         public int ScheduledTaskType { get; set; }
         public int SheduledTaskFrequency { get; set; }
+        public DateTime? LastExecution { get; set; }
         public sbyte Enabled { get; set; }
+        public string Param { get; set; }
 
         public virtual ScheduledTaskType ScheduledTaskTypeNavigation { get; set; }
         public virtual ScheduledTaskFrequency SheduledTaskFrequencyNavigation { get; set; }

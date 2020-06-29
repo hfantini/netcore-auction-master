@@ -21,6 +21,7 @@
 using AuctionMaster.App.Enumeration;
 using AuctionMaster.App.Exception;
 using AuctionMaster.App.Model;
+using AuctionMaster.App.Service.Blizzard;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +46,7 @@ namespace AuctionMaster.App.Service.Task
         // ======================================================================
 
         // == CONST
+        private readonly IBlizzardRealmService _blizzardRealmService;
 
         // == VAR
         private Timer _timer;
@@ -54,10 +56,11 @@ namespace AuctionMaster.App.Service.Task
         // == CONSTRUCTOR(S)
         // ======================================================================
 
-        public ScheduledTaskService(IServiceScopeFactory scopeFactory)
+        public ScheduledTaskService(IServiceScopeFactory scopeFactory, IBlizzardRealmService blizzardRealmService)
         {
             this._scopeFactory = scopeFactory;
             this._scheduledTasks = new Dictionary<int, GenericScheduledTask>();
+            this._blizzardRealmService = blizzardRealmService;
 
             Console.WriteLine("SCHEDULED TASK SERVICE CREATED.");
         }
@@ -82,6 +85,8 @@ namespace AuctionMaster.App.Service.Task
             {
                 // CREATE NEW INTERVAL
 
+                this.onTimedEvent(null, null);
+
                 this._timer = new Timer();
                 this._timer.Elapsed += new ElapsedEventHandler(onTimedEvent);
                 this._timer.Interval = 10000;
@@ -90,6 +95,8 @@ namespace AuctionMaster.App.Service.Task
             else
             {
                 // ENABLE THE INTERVAL
+
+                this.onTimedEvent(null, null);
 
                 this._timer.Enabled = true;
             }
@@ -133,13 +140,12 @@ namespace AuctionMaster.App.Service.Task
 
             foreach (ScheduledTask task in scheduledTaskList)
             {
-
                 GenericScheduledTask taskInstance = null;
 
                 switch(task.ScheduledTaskType)
                 {
                     case 1:
-                        taskInstance = new RealmScanTask(this._scopeFactory, task);
+                        taskInstance = new RealmScanTask(this._scopeFactory, task, this._blizzardRealmService);
                         break;
                 }
 
@@ -161,10 +167,30 @@ namespace AuctionMaster.App.Service.Task
         {
             foreach (KeyValuePair<int, GenericScheduledTask> entry in this._scheduledTasks)
             {
-                if( entry.Value.state == ScheduledTaskState.NOT_RUNNING )
+                if (entry.Value.task.Enabled == 1)
                 {
-                    entry.Value.start();
+                    if (entry.Value.state == ScheduledTaskState.IDLE)
+                    {
+                        if(entry.Value.task.SheduledTaskFrequencyNavigation.Id == 1)
+                        {
+                            // INTERVAL
+
+                            if (entry.Value.task.LastExecution == null)
+                            {
+                                entry.Value.start();
+                            }
+                            else
+                            {
+                                if ((new DateTime() - entry.Value.task.LastExecution.Value).TotalSeconds > entry.Value.task.ScheduledTaskInterval.First().Interval )
+                                {
+                                    entry.Value.start();
+                                }
+                            }
+                        }                        
+                    }
                 }
+
+                entry.Value.task.Enabled = 0;
             }
         }
 

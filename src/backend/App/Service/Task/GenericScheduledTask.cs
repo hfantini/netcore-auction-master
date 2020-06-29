@@ -22,6 +22,7 @@ using AuctionMaster.App.Enumeration;
 using AuctionMaster.App.Exception;
 using AuctionMaster.App.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace AuctionMaster.App.Service.Task
         {
             this._scopeFactory = scopeFactory;
             this._scheduledTask = scheduledTask;
-            this._state = ScheduledTaskState.NOT_RUNNING;
+            this._state = ScheduledTaskState.IDLE;
         }
 
         // == METHOD(S)
@@ -80,14 +81,32 @@ namespace AuctionMaster.App.Service.Task
 
             try
             {
+                // == PARAMETER TREATMENT
+
+                JObject param = null;
+
+                if(this.task.Param != null)
+                {
+                    try
+                    {
+                        param = JObject.Parse(this.task.Param);
+                    }
+                    catch(System.Exception e)
+                    {
+                        throw new AuctionMasterTaskException(ExceptionType.FATAL, "Invalid param formatting - Expected: Valid JSON.");
+                    }
+                }
+
+                // == TASK LIFE-CYCLE EXECUTION
+
                 this.cancellationToken = new CancellationTokenSource();
                 onStart();
 
                 this._state = ScheduledTaskState.RUNNING;
-                onExecute(this.cancellationToken.Token);
+                onExecute(param, this.cancellationToken.Token);
 
                 onFinish();
-                this._state = ScheduledTaskState.NOT_RUNNING;
+                this._state = ScheduledTaskState.IDLE;
             }
             catch( System.Exception e )
             {
@@ -165,7 +184,7 @@ namespace AuctionMaster.App.Service.Task
         /// <summary>
         /// The task execution method.
         /// </summary>
-        protected virtual void onExecute(CancellationToken cancellationToken)
+        protected virtual void onExecute(JObject param, CancellationToken cancellationToken)
         {
 
         }
@@ -184,7 +203,7 @@ namespace AuctionMaster.App.Service.Task
         /// <param name="e">Exception structure</param>
         protected virtual void onError(AuctionMasterTaskException e)
         {
-
+            Console.WriteLine("[ERROR]: " + e.Message);
         }
 
         // == GETTER(S) AND SETTER(S)
@@ -196,6 +215,14 @@ namespace AuctionMaster.App.Service.Task
         public ScheduledTaskState state
         {
             get { return this._state; }
+        }
+
+        /// <summary>
+        /// Returns scheduled task information.
+        /// </summary>
+        public ScheduledTask task
+        {
+            get { return this._scheduledTask; }
         }
     }
 }

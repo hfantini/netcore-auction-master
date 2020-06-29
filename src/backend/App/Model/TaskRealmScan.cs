@@ -8,9 +8,10 @@ namespace AuctionMaster.App.Model
         public int Id { get; set; }
         public int ScheduledTask { get; set; }
         public DateTime Starttime { get; set; }
-        public DateTime Endtime { get; set; }
+        public DateTime? Endtime { get; set; }
         public int? ConnectRealmCount { get; set; }
         public int? RealmCount { get; set; }
+        public sbyte Status { get; set; }
 
         public virtual ScheduledTask ScheduledTaskNavigation { get; set; }
     }

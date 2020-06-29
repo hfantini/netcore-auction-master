@@ -28,14 +28,13 @@ using System.Threading.Tasks;
 
 namespace AuctionMaster.App.Enumeration
 {
-    // == CLASS
+
+    // == ENUM
     // ==========================================================================
 
-    public enum ScheduledTaskState
+    public enum ApiResponseType
     {
-        IDLE,
-        RUNNING,
-        CANCELLED,
-        ERROR
+        OK = 1,
+        FAIL = 2
     }
 }

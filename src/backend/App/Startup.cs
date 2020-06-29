@@ -24,6 +24,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using AuctionMaster.App.Model;
+using AuctionMaster.App.Service.Blizzard;
 using AuctionMaster.App.Service.Task;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -70,13 +71,17 @@ namespace AuctionMaster.Backend
         {
             this.serviceColletion = serviceColletion;
 
-            // ADD DATABASE CONTEXT
+            // == ADD DATABASE CONTEXT
             this.serviceColletion.AddDbContext<DatabaseContext>(options => options.UseMySql( Configuration.GetConnectionString("AuctionMasterDatabase") ) );
 
-            // ADD CONTROLLERS
+            // == ADD HTTP CLIENT
+            this.serviceColletion.AddHttpClient();
+
+            // == ADD CONTROLLERS
             this.serviceColletion.AddControllers();
 
-            // ADD SERVICES
+            // == ADD SERVICES
+            this.serviceColletion.AddSingleton<IBlizzardRealmService, BlizzardRealmService>();
             this.serviceColletion.AddSingleton<IScheduledTaskService, ScheduledTaskService>();
         }
 

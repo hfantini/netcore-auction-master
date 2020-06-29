@@ -13,10 +13,8 @@ namespace AuctionMaster.App.Model
 
         public int Id { get; set; }
         public int RealmRegion { get; set; }
-        public int RealmPopulation { get; set; }
 
-        public virtual RealmPopulation RealmPopulationNavigation { get; set; }
-        public virtual RealmRegion RealmRegionNavigation { get; set; }
+        public virtual ConnectedRealmRegion RealmRegionNavigation { get; set; }
         public virtual ICollection<Realm> Realm { get; set; }
         public virtual ICollection<TaskAuctionScan> TaskAuctionScan { get; set; }
     }

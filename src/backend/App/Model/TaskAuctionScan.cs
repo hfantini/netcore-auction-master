@@ -15,8 +15,9 @@ namespace AuctionMaster.App.Model
         public int ScheduledTask { get; set; }
         public int ConnectedRealm { get; set; }
         public DateTime Starttime { get; set; }
-        public DateTime Endtime { get; set; }
+        public DateTime? Endtime { get; set; }
         public sbyte Status { get; set; }
+        public string Param { get; set; }
 
         public virtual ConnectedRealm ConnectedRealmNavigation { get; set; }
         public virtual ScheduledTask ScheduledTaskNavigation { get; set; }

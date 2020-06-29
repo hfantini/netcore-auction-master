@@ -17,11 +17,10 @@ namespace AuctionMaster.App.Model
 
         public virtual DbSet<Auction> Auction { get; set; }
         public virtual DbSet<ConnectedRealm> ConnectedRealm { get; set; }
+        public virtual DbSet<ConnectedRealmRegion> ConnectedRealmRegion { get; set; }
         public virtual DbSet<Item> Item { get; set; }
         public virtual DbSet<ItemQuality> ItemQuality { get; set; }
         public virtual DbSet<Realm> Realm { get; set; }
-        public virtual DbSet<RealmPopulation> RealmPopulation { get; set; }
-        public virtual DbSet<RealmRegion> RealmRegion { get; set; }
         public virtual DbSet<ScheduledTask> ScheduledTask { get; set; }
         public virtual DbSet<ScheduledTaskFrequency> ScheduledTaskFrequency { get; set; }
         public virtual DbSet<ScheduledTaskInterval> ScheduledTaskInterval { get; set; }
@@ -82,29 +81,39 @@ namespace AuctionMaster.App.Model
             {
                 entity.ToTable("connected_realm");
 
-                entity.HasIndex(e => e.RealmPopulation)
-                    .HasName("fk_CONNECTED_REALM_REALM_POPULATION1_idx");
-
                 entity.HasIndex(e => e.RealmRegion)
                     .HasName("fk_CONNECTED_REALM_REALM_REGION_idx");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.RealmPopulation).HasColumnName("REALM_POPULATION");
-
                 entity.Property(e => e.RealmRegion).HasColumnName("REALM_REGION");
-
-                entity.HasOne(d => d.RealmPopulationNavigation)
-                    .WithMany(p => p.ConnectedRealm)
-                    .HasForeignKey(d => d.RealmPopulation)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_CONNECTED_REALM_REALM_POPULATION1");
 
                 entity.HasOne(d => d.RealmRegionNavigation)
                     .WithMany(p => p.ConnectedRealm)
                     .HasForeignKey(d => d.RealmRegion)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_CONNECTED_REALM_REALM_REGION");
+            });
+
+            modelBuilder.Entity<ConnectedRealmRegion>(entity =>
+            {
+                entity.ToTable("connected_realm_region");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasColumnName("CODE")
+                    .HasColumnType("varchar(3)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasColumnName("NAME")
+                    .HasColumnType("varchar(100)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
             });
 
             modelBuilder.Entity<Item>(entity =>
@@ -207,34 +216,6 @@ namespace AuctionMaster.App.Model
                     .HasConstraintName("fk_REALM_CONNECTED_REALM1");
             });
 
-            modelBuilder.Entity<RealmPopulation>(entity =>
-            {
-                entity.ToTable("realm_population");
-
-                entity.Property(e => e.Id).HasColumnName("ID");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasColumnName("NAME")
-                    .HasColumnType("varchar(60)")
-                    .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
-            });
-
-            modelBuilder.Entity<RealmRegion>(entity =>
-            {
-                entity.ToTable("realm_region");
-
-                entity.Property(e => e.Id).HasColumnName("ID");
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasColumnName("NAME")
-                    .HasColumnType("varchar(100)")
-                    .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
-            });
-
             modelBuilder.Entity<ScheduledTask>(entity =>
             {
                 entity.ToTable("scheduled_task");
@@ -249,10 +230,20 @@ namespace AuctionMaster.App.Model
 
                 entity.Property(e => e.Enabled).HasColumnName("ENABLED");
 
+                entity.Property(e => e.LastExecution)
+                    .HasColumnName("LAST_EXECUTION")
+                    .HasColumnType("datetime");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnName("NAME")
                     .HasColumnType("varchar(100)")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
+
+                entity.Property(e => e.Param)
+                    .HasColumnName("PARAM")
+                    .HasColumnType("text")
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
 
@@ -296,10 +287,6 @@ namespace AuctionMaster.App.Model
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Interval).HasColumnName("INTERVAL");
-
-                entity.Property(e => e.Lastexecution)
-                    .HasColumnName("LASTEXECUTION")
-                    .HasColumnType("timestamp");
 
                 entity.Property(e => e.ScheduledTask).HasColumnName("SCHEDULED_TASK");
 
@@ -346,6 +333,12 @@ namespace AuctionMaster.App.Model
                 entity.Property(e => e.Endtime)
                     .HasColumnName("ENDTIME")
                     .HasColumnType("timestamp");
+
+                entity.Property(e => e.Param)
+                    .HasColumnName("PARAM")
+                    .HasColumnType("text")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
 
                 entity.Property(e => e.ScheduledTask).HasColumnName("SCHEDULED_TASK");
 
@@ -419,6 +412,8 @@ namespace AuctionMaster.App.Model
                 entity.Property(e => e.Starttime)
                     .HasColumnName("STARTTIME")
                     .HasColumnType("timestamp");
+
+                entity.Property(e => e.Status).HasColumnName("STATUS");
 
                 entity.HasOne(d => d.ScheduledTaskNavigation)
                     .WithMany(p => p.TaskRealmScan)
