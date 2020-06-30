@@ -8,8 +8,7 @@ namespace AuctionMaster.App.Model
         public ScheduledTask()
         {
             ScheduledTaskInterval = new HashSet<ScheduledTaskInterval>();
-            TaskAuctionScan = new HashSet<TaskAuctionScan>();
-            TaskRealmScan = new HashSet<TaskRealmScan>();
+            ScheduledTaskLog = new HashSet<ScheduledTaskLog>();
         }
 
         public int Id { get; set; }
@@ -23,7 +22,6 @@ namespace AuctionMaster.App.Model
         public virtual ScheduledTaskType ScheduledTaskTypeNavigation { get; set; }
         public virtual ScheduledTaskFrequency SheduledTaskFrequencyNavigation { get; set; }
         public virtual ICollection<ScheduledTaskInterval> ScheduledTaskInterval { get; set; }
-        public virtual ICollection<TaskAuctionScan> TaskAuctionScan { get; set; }
-        public virtual ICollection<TaskRealmScan> TaskRealmScan { get; set; }
+        public virtual ICollection<ScheduledTaskLog> ScheduledTaskLog { get; set; }
     }
 }

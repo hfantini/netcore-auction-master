@@ -54,7 +54,7 @@ namespace AuctionMaster.App.Service.Task
         private IServiceScope _scope;
         private DatabaseContext _databaseContext;
         private IDbContextTransaction _dbTransaction;
-        private TaskRealmScan _taskRealmScan;
+        private ScheduledTaskLog _taskLog;
         private int _connectedRealmCount;
         private int _RealmCount;
 
@@ -87,16 +87,18 @@ namespace AuctionMaster.App.Service.Task
 
             this._dbTransaction = this._databaseContext.Database.BeginTransaction();
 
+            // SCHEDULED_TASK LAST EXECUTION
+
             //this._scheduledTask.LastExecution = currentTime;
             //this._databaseContext.ScheduledTask.Update(this._scheduledTask);
 
-            this._taskRealmScan = new TaskRealmScan();
-            this._taskRealmScan.Starttime = currentTime;
-            this._taskRealmScan.ScheduledTask = this._scheduledTask.Id;
-            this._taskRealmScan.ConnectRealmCount = 0;
-            this._taskRealmScan.RealmCount = 0;
-            this._databaseContext.TaskRealmScan.Add(this._taskRealmScan);
-            
+            // SCHEDULED_TASK_LOG
+
+            this._taskLog = new ScheduledTaskLog();
+            this._taskLog.StartTime = currentTime;
+            this._taskLog.ScheduledTask = this._scheduledTask.Id;
+            this._databaseContext.ScheduledTaskLog.Add(this._taskLog);
+
             this._databaseContext.SaveChanges();
 
             this._dbTransaction.Commit();
@@ -206,13 +208,18 @@ namespace AuctionMaster.App.Service.Task
         {
             base.onFinish();
 
-            // == WRITE LOGS ABOUT THE EXECUTION AND UPDATE TASK DATA
+            // == WRITES LOG ABOUT THE EXECUTION AND UPDATE TASK DATA
 
-            this._taskRealmScan.Endtime = DateTime.Now;
-            this._taskRealmScan.Status = 1;
-            this._taskRealmScan.ConnectRealmCount = this._connectedRealmCount;
-            this._taskRealmScan.RealmCount = this._RealmCount;
+            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
+            taskLog.Entity.Status = 1;
+            taskLog.Entity.EndTime = DateTime.Now;
 
+            JObject message = new JObject();
+            message.Add("connectedRealmCount", this._connectedRealmCount);
+            message.Add("realmCount", this._RealmCount);
+
+            taskLog.Entity.Message = message.ToString();
+            taskLog.State = EntityState.Modified;
             this._databaseContext.SaveChanges();
 
             this._scope.Dispose();
@@ -222,11 +229,16 @@ namespace AuctionMaster.App.Service.Task
         {
             base.onError(e);
 
-            // == WRITE LOGS ABOUT THE ERROR AND UPDATE TASK DATA
+            // == WRITES LOG ABOUT THE ERROR AND UPDATE TASK DATA
+            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
+            taskLog.Entity.Status = 1;
+            taskLog.Entity.EndTime = DateTime.Now;
 
-            this._taskRealmScan.Endtime = DateTime.Now;
-            this._taskRealmScan.Status = 0;
+            JObject message = new JObject();
+            message.Add("error", e.Message);
 
+            taskLog.Entity.Message = message.ToString();
+            taskLog.State = EntityState.Modified;
             this._databaseContext.SaveChanges();
 
             this._scope.Dispose();

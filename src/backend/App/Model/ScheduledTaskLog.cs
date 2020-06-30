@@ -3,15 +3,14 @@ using System.Collections.Generic;
 
 namespace AuctionMaster.App.Model
 {
-    public partial class TaskRealmScan
+    public partial class ScheduledTaskLog
     {
         public int Id { get; set; }
         public int ScheduledTask { get; set; }
-        public DateTime Starttime { get; set; }
-        public DateTime? Endtime { get; set; }
-        public int? ConnectRealmCount { get; set; }
-        public int? RealmCount { get; set; }
+        public DateTime? StartTime { get; set; }
+        public DateTime? EndTime { get; set; }
         public sbyte Status { get; set; }
+        public string Message { get; set; }
 
         public virtual ScheduledTask ScheduledTaskNavigation { get; set; }
     }

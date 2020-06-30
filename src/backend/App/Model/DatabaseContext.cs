@@ -24,10 +24,8 @@ namespace AuctionMaster.App.Model
         public virtual DbSet<ScheduledTask> ScheduledTask { get; set; }
         public virtual DbSet<ScheduledTaskFrequency> ScheduledTaskFrequency { get; set; }
         public virtual DbSet<ScheduledTaskInterval> ScheduledTaskInterval { get; set; }
+        public virtual DbSet<ScheduledTaskLog> ScheduledTaskLog { get; set; }
         public virtual DbSet<ScheduledTaskType> ScheduledTaskType { get; set; }
-        public virtual DbSet<TaskAuctionScan> TaskAuctionScan { get; set; }
-        public virtual DbSet<TaskAuctionScanLog> TaskAuctionScanLog { get; set; }
-        public virtual DbSet<TaskRealmScan> TaskRealmScan { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -44,11 +42,11 @@ namespace AuctionMaster.App.Model
             {
                 entity.ToTable("auction");
 
+                entity.HasIndex(e => e.ConnectedRealm)
+                    .HasName("fk_AUCTION_CONNECTED_REALM1_idx");
+
                 entity.HasIndex(e => e.Item)
                     .HasName("fk_AUCTION_ITEM1_idx");
-
-                entity.HasIndex(e => e.TaskAuctionScan)
-                    .HasName("fk_AUCTION_AUCTION_SCAN1_idx");
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
@@ -58,23 +56,23 @@ namespace AuctionMaster.App.Model
 
                 entity.Property(e => e.Buyout).HasColumnName("BUYOUT");
 
+                entity.Property(e => e.ConnectedRealm).HasColumnName("CONNECTED_REALM");
+
                 entity.Property(e => e.Item).HasColumnName("ITEM");
 
                 entity.Property(e => e.Quantity).HasColumnName("QUANTITY");
 
-                entity.Property(e => e.TaskAuctionScan).HasColumnName("TASK_AUCTION_SCAN");
+                entity.HasOne(d => d.ConnectedRealmNavigation)
+                    .WithMany(p => p.Auction)
+                    .HasForeignKey(d => d.ConnectedRealm)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_AUCTION_CONNECTED_REALM1");
 
                 entity.HasOne(d => d.ItemNavigation)
                     .WithMany(p => p.Auction)
                     .HasForeignKey(d => d.Item)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_AUCTION_ITEM1");
-
-                entity.HasOne(d => d.TaskAuctionScanNavigation)
-                    .WithMany(p => p.Auction)
-                    .HasForeignKey(d => d.TaskAuctionScan)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_AUCTION_AUCTION_SCAN1");
             });
 
             modelBuilder.Entity<ConnectedRealm>(entity =>
@@ -297,6 +295,40 @@ namespace AuctionMaster.App.Model
                     .HasConstraintName("fk_SCHEDULED_TASK_INTERVAL_SCHEDULED_TASK1");
             });
 
+            modelBuilder.Entity<ScheduledTaskLog>(entity =>
+            {
+                entity.ToTable("scheduled_task_log");
+
+                entity.HasIndex(e => e.ScheduledTask)
+                    .HasName("fk_TASK_AUCTION_SCAN_LOG_SCHEDULED_TASK1_idx");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+
+                entity.Property(e => e.EndTime)
+                    .HasColumnName("END_TIME")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.Message)
+                    .HasColumnName("MESSAGE")
+                    .HasColumnType("text")
+                    .HasCharSet("utf8")
+                    .HasCollation("utf8_general_ci");
+
+                entity.Property(e => e.ScheduledTask).HasColumnName("SCHEDULED_TASK");
+
+                entity.Property(e => e.StartTime)
+                    .HasColumnName("START_TIME")
+                    .HasColumnType("datetime");
+
+                entity.Property(e => e.Status).HasColumnName("STATUS");
+
+                entity.HasOne(d => d.ScheduledTaskNavigation)
+                    .WithMany(p => p.ScheduledTaskLog)
+                    .HasForeignKey(d => d.ScheduledTask)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_TASK_AUCTION_SCAN_LOG_SCHEDULED_TASK1");
+            });
+
             modelBuilder.Entity<ScheduledTaskType>(entity =>
             {
                 entity.ToTable("scheduled_task_type");
@@ -314,112 +346,6 @@ namespace AuctionMaster.App.Model
                     .HasColumnType("varchar(100)")
                     .HasCharSet("utf8")
                     .HasCollation("utf8_general_ci");
-            });
-
-            modelBuilder.Entity<TaskAuctionScan>(entity =>
-            {
-                entity.ToTable("task_auction_scan");
-
-                entity.HasIndex(e => e.ConnectedRealm)
-                    .HasName("fk_AUCTION_SCAN_CONNECTED_REALM1_idx");
-
-                entity.HasIndex(e => e.ScheduledTask)
-                    .HasName("fk_TASK_AUCTION_SCAN_SCHEDULED_TASK1_idx");
-
-                entity.Property(e => e.Id).HasColumnName("ID");
-
-                entity.Property(e => e.ConnectedRealm).HasColumnName("CONNECTED_REALM");
-
-                entity.Property(e => e.Endtime)
-                    .HasColumnName("ENDTIME")
-                    .HasColumnType("timestamp");
-
-                entity.Property(e => e.Param)
-                    .HasColumnName("PARAM")
-                    .HasColumnType("text")
-                    .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
-
-                entity.Property(e => e.ScheduledTask).HasColumnName("SCHEDULED_TASK");
-
-                entity.Property(e => e.Starttime)
-                    .HasColumnName("STARTTIME")
-                    .HasColumnType("timestamp");
-
-                entity.Property(e => e.Status).HasColumnName("STATUS");
-
-                entity.HasOne(d => d.ConnectedRealmNavigation)
-                    .WithMany(p => p.TaskAuctionScan)
-                    .HasForeignKey(d => d.ConnectedRealm)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_AUCTION_SCAN_CONNECTED_REALM1");
-
-                entity.HasOne(d => d.ScheduledTaskNavigation)
-                    .WithMany(p => p.TaskAuctionScan)
-                    .HasForeignKey(d => d.ScheduledTask)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_TASK_AUCTION_SCAN_SCHEDULED_TASK1");
-            });
-
-            modelBuilder.Entity<TaskAuctionScanLog>(entity =>
-            {
-                entity.ToTable("task_auction_scan_log");
-
-                entity.HasIndex(e => e.TaskAuctionScan)
-                    .HasName("fk_AUCTION_SCAN_LOG_AUCTION_SCAN1_idx");
-
-                entity.Property(e => e.Id).HasColumnName("ID");
-
-                entity.Property(e => e.Code)
-                    .HasColumnName("CODE")
-                    .HasDefaultValueSql("'-1'");
-
-                entity.Property(e => e.Message)
-                    .IsRequired()
-                    .HasColumnName("MESSAGE")
-                    .HasColumnType("text")
-                    .HasCharSet("utf8")
-                    .HasCollation("utf8_general_ci");
-
-                entity.Property(e => e.TaskAuctionScan).HasColumnName("TASK_AUCTION_SCAN");
-
-                entity.HasOne(d => d.TaskAuctionScanNavigation)
-                    .WithMany(p => p.TaskAuctionScanLog)
-                    .HasForeignKey(d => d.TaskAuctionScan)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_AUCTION_SCAN_LOG_AUCTION_SCAN1");
-            });
-
-            modelBuilder.Entity<TaskRealmScan>(entity =>
-            {
-                entity.ToTable("task_realm_scan");
-
-                entity.HasIndex(e => e.ScheduledTask)
-                    .HasName("fk_TASK_REALM_SCAN_SCHEDULED_TASK1_idx");
-
-                entity.Property(e => e.Id).HasColumnName("ID");
-
-                entity.Property(e => e.ConnectRealmCount).HasColumnName("CONNECT_REALM_COUNT");
-
-                entity.Property(e => e.Endtime)
-                    .HasColumnName("ENDTIME")
-                    .HasColumnType("timestamp");
-
-                entity.Property(e => e.RealmCount).HasColumnName("REALM_COUNT");
-
-                entity.Property(e => e.ScheduledTask).HasColumnName("SCHEDULED_TASK");
-
-                entity.Property(e => e.Starttime)
-                    .HasColumnName("STARTTIME")
-                    .HasColumnType("timestamp");
-
-                entity.Property(e => e.Status).HasColumnName("STATUS");
-
-                entity.HasOne(d => d.ScheduledTaskNavigation)
-                    .WithMany(p => p.TaskRealmScan)
-                    .HasForeignKey(d => d.ScheduledTask)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_TASK_REALM_SCAN_SCHEDULED_TASK1");
             });
 
             OnModelCreatingPartial(modelBuilder);
