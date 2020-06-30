@@ -47,6 +47,7 @@ namespace AuctionMaster.App.Service.Task
 
         // == CONST
         private readonly IBlizzardRealmService _blizzardRealmService;
+        private readonly IBlizzardAuctionHouseService _blizzardAuctionHouseService;
 
         // == VAR
         private Timer _timer;
@@ -56,11 +57,12 @@ namespace AuctionMaster.App.Service.Task
         // == CONSTRUCTOR(S)
         // ======================================================================
 
-        public ScheduledTaskService(IServiceScopeFactory scopeFactory, IBlizzardRealmService blizzardRealmService)
+        public ScheduledTaskService(IServiceScopeFactory scopeFactory, IBlizzardRealmService blizzardRealmService, IBlizzardAuctionHouseService blizzardAuctionHouseService)
         {
             this._scopeFactory = scopeFactory;
             this._scheduledTasks = new Dictionary<int, GenericScheduledTask>();
             this._blizzardRealmService = blizzardRealmService;
+            this._blizzardAuctionHouseService = blizzardAuctionHouseService;
 
             Console.WriteLine("SCHEDULED TASK SERVICE CREATED.");
         }
@@ -147,6 +149,10 @@ namespace AuctionMaster.App.Service.Task
                     case 1:
                         taskInstance = new RealmScanTask(this._scopeFactory, task, this._blizzardRealmService);
                         break;
+
+                    case 2:
+                        taskInstance = new AuctionHouseScanTask(this._scopeFactory, task, this._blizzardAuctionHouseService);
+                        break;
                 }
 
                 if (task != null)
@@ -171,7 +177,7 @@ namespace AuctionMaster.App.Service.Task
                 {
                     if (entry.Value.state == ScheduledTaskState.IDLE)
                     {
-                        if(entry.Value.task.SheduledTaskFrequencyNavigation.Id == 1)
+                        if(entry.Value.task.SheduledTaskFrequencyNavigation.Id == 1 && entry.Value.task.ScheduledTaskInterval != null)
                         {
                             // INTERVAL
 
@@ -189,8 +195,6 @@ namespace AuctionMaster.App.Service.Task
                         }                        
                     }
                 }
-
-                entry.Value.task.Enabled = 0;
             }
         }
 

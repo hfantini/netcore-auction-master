@@ -5,6 +5,11 @@ namespace AuctionMaster.App.Model
 {
     public partial class ScheduledTaskLog
     {
+        public ScheduledTaskLog()
+        {
+            Auction = new HashSet<Auction>();
+        }
+
         public int Id { get; set; }
         public int ScheduledTask { get; set; }
         public DateTime? StartTime { get; set; }
@@ -13,5 +18,6 @@ namespace AuctionMaster.App.Model
         public string Message { get; set; }
 
         public virtual ScheduledTask ScheduledTaskNavigation { get; set; }
+        public virtual ICollection<Auction> Auction { get; set; }
     }
 }

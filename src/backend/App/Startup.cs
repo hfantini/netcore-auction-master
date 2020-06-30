@@ -82,6 +82,7 @@ namespace AuctionMaster.Backend
 
             // == ADD SERVICES
             this.serviceColletion.AddSingleton<IBlizzardRealmService, BlizzardRealmService>();
+            this.serviceColletion.AddSingleton<IBlizzardAuctionHouseService, BlizzardAuctionHouseService>();
             this.serviceColletion.AddSingleton<IScheduledTaskService, ScheduledTaskService>();
         }
 

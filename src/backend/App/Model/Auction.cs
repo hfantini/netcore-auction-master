@@ -6,6 +6,7 @@ namespace AuctionMaster.App.Model
     public partial class Auction
     {
         public int Id { get; set; }
+        public int ScheduledTaskLog { get; set; }
         public int ConnectedRealm { get; set; }
         public int Item { get; set; }
         public int Buyout { get; set; }
@@ -14,5 +15,6 @@ namespace AuctionMaster.App.Model
 
         public virtual ConnectedRealm ConnectedRealmNavigation { get; set; }
         public virtual Item ItemNavigation { get; set; }
+        public virtual ScheduledTaskLog ScheduledTaskLogNavigation { get; set; }
     }
 }

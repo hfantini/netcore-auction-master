@@ -48,6 +48,9 @@ namespace AuctionMaster.App.Model
                 entity.HasIndex(e => e.Item)
                     .HasName("fk_AUCTION_ITEM1_idx");
 
+                entity.HasIndex(e => e.ScheduledTaskLog)
+                    .HasName("fk_AUCTION_SCHEDULED_TASK_LOG1_idx");
+
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Bid)
@@ -62,6 +65,8 @@ namespace AuctionMaster.App.Model
 
                 entity.Property(e => e.Quantity).HasColumnName("QUANTITY");
 
+                entity.Property(e => e.ScheduledTaskLog).HasColumnName("SCHEDULED_TASK_LOG");
+
                 entity.HasOne(d => d.ConnectedRealmNavigation)
                     .WithMany(p => p.Auction)
                     .HasForeignKey(d => d.ConnectedRealm)
@@ -73,6 +78,12 @@ namespace AuctionMaster.App.Model
                     .HasForeignKey(d => d.Item)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_AUCTION_ITEM1");
+
+                entity.HasOne(d => d.ScheduledTaskLogNavigation)
+                    .WithMany(p => p.Auction)
+                    .HasForeignKey(d => d.ScheduledTaskLog)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_AUCTION_SCHEDULED_TASK_LOG1");
             });
 
             modelBuilder.Entity<ConnectedRealm>(entity =>

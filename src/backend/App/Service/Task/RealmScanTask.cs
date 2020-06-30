@@ -89,8 +89,8 @@ namespace AuctionMaster.App.Service.Task
 
             // SCHEDULED_TASK LAST EXECUTION
 
-            //this._scheduledTask.LastExecution = currentTime;
-            //this._databaseContext.ScheduledTask.Update(this._scheduledTask);
+            this._scheduledTask.LastExecution = currentTime;
+            this._databaseContext.ScheduledTask.Update(this._scheduledTask);
 
             // SCHEDULED_TASK_LOG
 
@@ -211,15 +211,15 @@ namespace AuctionMaster.App.Service.Task
             // == WRITES LOG ABOUT THE EXECUTION AND UPDATE TASK DATA
 
             var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
-            taskLog.Entity.Status = 1;
-            taskLog.Entity.EndTime = DateTime.Now;
+            this._taskLog.Status = 1;
+            this._taskLog.EndTime = DateTime.Now;
 
             JObject message = new JObject();
             message.Add("connectedRealmCount", this._connectedRealmCount);
             message.Add("realmCount", this._RealmCount);
 
-            taskLog.Entity.Message = message.ToString();
-            taskLog.State = EntityState.Modified;
+            this._taskLog.Message = message.ToString();
+            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
             this._databaseContext.SaveChanges();
 
             this._scope.Dispose();
@@ -230,15 +230,14 @@ namespace AuctionMaster.App.Service.Task
             base.onError(e);
 
             // == WRITES LOG ABOUT THE ERROR AND UPDATE TASK DATA
-            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
-            taskLog.Entity.Status = 1;
-            taskLog.Entity.EndTime = DateTime.Now;
+            this._taskLog.Status = 1;
+            this._taskLog.EndTime = DateTime.Now;
 
             JObject message = new JObject();
             message.Add("error", e.Message);
 
-            taskLog.Entity.Message = message.ToString();
-            taskLog.State = EntityState.Modified;
+            this._taskLog.Message = message.ToString();
+            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
             this._databaseContext.SaveChanges();
 
             this._scope.Dispose();

@@ -81,28 +81,29 @@ namespace AuctionMaster.App.Service.Task
 
             try
             {
-                // == PARAMETER TREATMENT
-
-                JObject param = null;
-
-                if(this.task.Param != null)
-                {
-                    try
-                    {
-                        param = JObject.Parse(this.task.Param);
-                    }
-                    catch(System.Exception e)
-                    {
-                        throw new AuctionMasterTaskException(ExceptionType.FATAL, "Invalid param formatting - Expected: Valid JSON.");
-                    }
-                }
+                this._state = ScheduledTaskState.RUNNING;
 
                 // == TASK LIFE-CYCLE EXECUTION
 
                 this.cancellationToken = new CancellationTokenSource();
                 onStart();
 
-                this._state = ScheduledTaskState.RUNNING;
+                // PARAMETER TREATMENT
+
+                JObject param = null;
+
+                if (this.task.Param != null)
+                {
+                    try
+                    {
+                        param = JObject.Parse(this.task.Param);
+                    }
+                    catch (System.Exception e)
+                    {
+                        throw new AuctionMasterTaskException(ExceptionType.FATAL, "Invalid param formatting - Expected: Valid JSON.");
+                    }
+                }
+
                 onExecute(param, this.cancellationToken.Token);
 
                 onFinish();
