@@ -85,11 +85,6 @@ namespace AuctionMaster.App.Service.Task
 
             this._dbTransaction = this._databaseContext.Database.BeginTransaction();
 
-            // SCHEDULED_TASK LAST EXECUTION
-
-            //this._scheduledTask.LastExecution = currentTime;
-            //this._databaseContext.ScheduledTask.Update(this._scheduledTask);
-
             // SCHEDULED_TASK_LOG
 
             this._taskLog = new ScheduledTaskLog();
@@ -108,7 +103,7 @@ namespace AuctionMaster.App.Service.Task
         {
             ConnectedRealm connectedRealm = this._databaseContext.ConnectedRealm.Find(connectedRealmID);
 
-            if(connectedRealm != null)
+            if(connectedRealm == null)
             {
                 Task<JObject> auctionTask = this._blizzardAuctionHouseService.getAuctionList(connectedRealm);
                 auctionTask.Wait();

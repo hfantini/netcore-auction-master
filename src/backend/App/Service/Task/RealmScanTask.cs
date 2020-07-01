@@ -51,10 +51,7 @@ namespace AuctionMaster.App.Service.Task
         private readonly IBlizzardRealmService _blizzardRealmService;
 
         // == VAR
-        private IServiceScope _scope;
-        private DatabaseContext _databaseContext;
-        private IDbContextTransaction _dbTransaction;
-        private ScheduledTaskLog _taskLog;
+
         private int _connectedRealmCount;
         private int _RealmCount;
 
@@ -75,46 +72,18 @@ namespace AuctionMaster.App.Service.Task
 
             this._connectedRealmCount = 0;
             this._RealmCount = 0;
-
-            // == CREATES THE SCOPE & DATABASE CONTEXT
-
-            this._scope = this._scopeFactory.CreateScope();
-            this._databaseContext = this._scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-
-            // == CREATES THE ENTRY OF THIS SCAN ON DATABASE
-
-            var currentTime = DateTime.Now;
-
-            this._dbTransaction = this._databaseContext.Database.BeginTransaction();
-
-            // SCHEDULED_TASK LAST EXECUTION
-
-            this._scheduledTask.LastExecution = currentTime;
-            this._databaseContext.ScheduledTask.Update(this._scheduledTask);
-
-            // SCHEDULED_TASK_LOG
-
-            this._taskLog = new ScheduledTaskLog();
-            this._taskLog.StartTime = currentTime;
-            this._taskLog.ScheduledTask = this._scheduledTask.Id;
-            this._databaseContext.ScheduledTaskLog.Add(this._taskLog);
-
-            this._databaseContext.SaveChanges();
-
-            this._dbTransaction.Commit();
-            this._dbTransaction.Dispose();
-            this._dbTransaction = null;
         }
 
         protected override void onExecute(JObject param, CancellationToken cancellationToken)
         {
             base.onExecute(param, cancellationToken);
 
+            throw new System.Exception("ferrou de vez");
             // OBTAIN A LIST OF CONNECTED REALM REGION
 
             List<ConnectedRealmRegion> realmRegions = this._databaseContext.ConnectedRealmRegion.OrderBy(crr => crr.Id).ToList<ConnectedRealmRegion>();
 
-            this._dbTransaction = this._databaseContext.Database.BeginTransaction();
+            this._databaseTransaction = this._databaseContext.Database.BeginTransaction();
 
             // LOOP OVER THE REGIONS
 
@@ -201,46 +170,22 @@ namespace AuctionMaster.App.Service.Task
                 }
             }
 
-            this._dbTransaction.Commit();
+            this._databaseTransaction.Commit();
         }
 
         protected override void onFinish()
         {
+            this._message.Add("connectedRealmCount", this._connectedRealmCount);
+            this._message.Add("realmCount", this._RealmCount);
+
             base.onFinish();
-
-            // == WRITES LOG ABOUT THE EXECUTION AND UPDATE TASK DATA
-
-            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
-            this._taskLog.Status = 1;
-            this._taskLog.EndTime = DateTime.Now;
-
-            JObject message = new JObject();
-            message.Add("connectedRealmCount", this._connectedRealmCount);
-            message.Add("realmCount", this._RealmCount);
-
-            this._taskLog.Message = message.ToString();
-            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
-            this._databaseContext.SaveChanges();
-
-            this._scope.Dispose();
         }
 
         protected override void onError(AuctionMasterTaskException e)
         {
+            this._message.Add("error", e.Message);
+
             base.onError(e);
-
-            // == WRITES LOG ABOUT THE ERROR AND UPDATE TASK DATA
-            this._taskLog.Status = 1;
-            this._taskLog.EndTime = DateTime.Now;
-
-            JObject message = new JObject();
-            message.Add("error", e.Message);
-
-            this._taskLog.Message = message.ToString();
-            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
-            this._databaseContext.SaveChanges();
-
-            this._scope.Dispose();
         }
 
         // == EVENT(S)

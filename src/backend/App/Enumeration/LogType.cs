@@ -31,12 +31,10 @@ namespace AuctionMaster.App.Enumeration
     // == CLASS
     // ==========================================================================
 
-    public enum ScheduledTaskState
+    public enum LogType
     {
-        IDLE,
-        RUNNING,
-        CANCELLED,
-        ERROR,
-        DEAD
+        INFO = 1,
+        WARNING = 2,
+        ERROR = 3
     }
 }

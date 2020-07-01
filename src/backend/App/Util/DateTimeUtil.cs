@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  *  
  *  == AUCTION MASTER ==
@@ -14,32 +14,28 @@
  *  
  *  + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
  */
- 
+
 // == IMPORTS
 // ==============================================================================
 
+using AuctionMaster.App.Enumeration;
+using AuctionMaster.App.Exception;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AuctionMaster.App.Util;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 // == NAMESPACE
 // ==============================================================================
-
-namespace AuctionMaster.Backend
+namespace AuctionMaster.App.Util
 {
     // == CLASS
     // ==========================================================================
 
     /// <summary>
-    /// Entry point of the application.
+    /// Provides methods related with DateTime operations.
     /// </summary>
-    public class Program
+    public class DateTimeUtil
     {
         // == DECLARATIONS
         // ======================================================================
@@ -54,19 +50,31 @@ namespace AuctionMaster.Backend
         // == METHOD(S)
         // ======================================================================
 
-        public static void Main(string[] args)
+        /// <summary>
+        /// Creates a log message.
+        /// </summary>
+        /// <param name="type">type of the log (Should be lower than LogType.Error)</param>
+        /// <param name="message">message</param>
+        /// <returns>String</returns>
+        public static String getDateYYYYMMDD(DateTime dateTime, String separator = " ", String dateSeparator = "/", String timeSeparator = ":")
         {
-            LogUtil.writeSoftwareHeader();
+            String retValue = null;
 
-            CreateHostBuilder(args).Build().Run();
+            if(dateTime != null)
+            {
+                String year = dateTime.Year.ToString();
+                String month = (dateTime.Month.ToString().Length == 1 ? "0" + dateTime.Month.ToString() : dateTime.Month.ToString() );
+                String day = (dateTime.Day.ToString().Length == 1 ? "0" + dateTime.Day.ToString() : dateTime.Month.ToString());
+
+                String hour = (dateTime.Hour.ToString().Length == 1 ? "0" + dateTime.Hour.ToString() : dateTime.Hour.ToString());
+                String minute = (dateTime.Minute.ToString().Length == 1 ? "0" + dateTime.Minute.ToString() : dateTime.Minute.ToString());
+                String second = (dateTime.Second.ToString().Length == 1 ? "0" + dateTime.Second.ToString() : dateTime.Second.ToString());
+
+                retValue = $"{year}{dateSeparator}{month}{dateSeparator}{day}{separator}{hour}{timeSeparator}{minute}{timeSeparator}{second}";
+            }
+
+            return retValue;
         }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-        Host.CreateDefaultBuilder(args)
-        .ConfigureWebHostDefaults(webBuilder =>
-        {
-            webBuilder.UseStartup<Startup>();
-        });
 
         // == EVENT(S)
         // ======================================================================

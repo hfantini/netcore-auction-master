@@ -1,1 +1,1 @@
-dotnet ef dbcontext scaffold "Server=localhost;Port=3306;DataBase=auction_master;Uid=root;Pwd=123456"  Pomelo.EntityFrameworkCore.MySql -o App/Model -f -c DatabaseContext
+dotnet ef dbcontext scaffold "Server=localhost;Port=3306;DataBase=auction_master;Uid=root;Pwd=123456"  Pomelo.EntityFrameworkCore.MySql -o App/Model -f -c DatabaseContext --no-build

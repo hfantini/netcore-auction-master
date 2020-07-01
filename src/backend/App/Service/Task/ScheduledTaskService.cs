@@ -22,6 +22,7 @@ using AuctionMaster.App.Enumeration;
 using AuctionMaster.App.Exception;
 using AuctionMaster.App.Model;
 using AuctionMaster.App.Service.Blizzard;
+using AuctionMaster.App.Util;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +54,7 @@ namespace AuctionMaster.App.Service.Task
         private Timer _timer;
         private IServiceScopeFactory _scopeFactory;
         private Dictionary<int, GenericScheduledTask> _scheduledTasks;
+        private int _cycleCount = 0;
 
         // == CONSTRUCTOR(S)
         // ======================================================================
@@ -64,7 +66,7 @@ namespace AuctionMaster.App.Service.Task
             this._blizzardRealmService = blizzardRealmService;
             this._blizzardAuctionHouseService = blizzardAuctionHouseService;
 
-            Console.WriteLine("SCHEDULED TASK SERVICE CREATED.");
+            LogUtil.writeLog(this.GetType(), LogType.INFO, "SCHEDULED TASK SERVICE CREATED");
         }
 
         // == METHOD(S)
@@ -103,7 +105,7 @@ namespace AuctionMaster.App.Service.Task
                 this._timer.Enabled = true;
             }
 
-            Console.WriteLine("SCHEDULED TASK SERVICE INITIALIZED.");
+            LogUtil.writeLog(this.GetType(), LogType.INFO, "SCHEDULED TASK SERVICE INITIALIZED");
         }
 
         /// <summary>
@@ -158,6 +160,7 @@ namespace AuctionMaster.App.Service.Task
                 if (task != null)
                 {
                     this._scheduledTasks.Add(task.Id, taskInstance);
+                    LogUtil.writeLog(this.GetType(), LogType.INFO, $"Scheduled task [{task.Name}] has been added to queue");
                 }
                 else
                 {
@@ -169,32 +172,78 @@ namespace AuctionMaster.App.Service.Task
         // == EVENT(S)
         // ======================================================================
 
-        private void onTimedEvent(object source, ElapsedEventArgs e)
+        private void onTimedEvent(object source, ElapsedEventArgs evtArgs)
         {
-            foreach (KeyValuePair<int, GenericScheduledTask> entry in this._scheduledTasks)
+            try
             {
-                if (entry.Value.task.Enabled == 1)
-                {
-                    if (entry.Value.state == ScheduledTaskState.IDLE)
-                    {
-                        if(entry.Value.task.SheduledTaskFrequencyNavigation.Id == 1 && entry.Value.task.ScheduledTaskInterval != null)
-                        {
-                            // INTERVAL
+                this._cycleCount++;
+                LogUtil.writeLog(this.GetType(), LogType.INFO, $"TASK ORCHESTRATION CYCLE ({this._cycleCount}) STARTED");
 
-                            if (entry.Value.task.LastExecution == null)
+                foreach (KeyValuePair<int, GenericScheduledTask> entry in this._scheduledTasks)
+                {
+                    if (entry.Value.task.Enabled == 1)
+                    {
+                        if (entry.Value.state == ScheduledTaskState.IDLE)
+                        {
+                            if (entry.Value.task.SheduledTaskFrequencyNavigation.Id == 1 && entry.Value.task.ScheduledTaskInterval != null)
                             {
-                                entry.Value.start();
-                            }
-                            else
-                            {
-                                if ((new DateTime() - entry.Value.task.LastExecution.Value).TotalSeconds > entry.Value.task.ScheduledTaskInterval.First().Interval )
+                                // INTERVAL
+
+                                ScheduledTaskLog lastTaskLog = null;
+
+                                using (var scope = this._scopeFactory.CreateScope())
+                                {
+                                    DatabaseContext databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                                    lastTaskLog = databaseContext.ScheduledTaskLog.Where(log => log.ScheduledTask == entry.Value.task.Id).OrderByDescending(log => log.StartTime).FirstOrDefault();
+                                }
+
+                                if (lastTaskLog == null)
                                 {
                                     entry.Value.start();
                                 }
+                                else
+                                {
+                                    if ((DateTime.Now - lastTaskLog.StartTime).TotalSeconds > entry.Value.task.ScheduledTaskInterval.First().Interval)
+                                    {
+                                        entry.Value.start();
+                                    }
+                                }
                             }
-                        }                        
+                        }
+                        if (entry.Value.state == ScheduledTaskState.ERROR)
+                        {
+                            ScheduledTaskLog lastTaskLog = null;
+
+                            using (var scope = this._scopeFactory.CreateScope())
+                            {
+                                DatabaseContext databaseContext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+                                lastTaskLog = databaseContext.ScheduledTaskLog.Where(log => log.ScheduledTask == entry.Value.task.Id).OrderByDescending(log => log.StartTime).FirstOrDefault();
+                            }
+
+                            if (lastTaskLog != null)
+                            {
+                                if (lastTaskLog.Tentatives < entry.Value.task.MaxTentatives)
+                                {
+                                    entry.Value.start();
+                                }
+                                else
+                                {
+                                    entry.Value.state = ScheduledTaskState.IDLE;
+                                    LogUtil.writeLog(this.GetType(), LogType.WARNING, $"Scheduled task '{entry.Value.task.Name}' has excceded the max number of tentatives to execution ({entry.Value.task.MaxTentatives})");
+                                }
+                            }
+                            else
+                            {
+                                entry.Value.state = ScheduledTaskState.DEAD;
+                                throw new AuctionMasterTaskException(ExceptionType.FATAL, $"Scheduled task '{entry.Value.task.Name}' has thrown an error in the last execution but no logs are written in database");
+                            }
+                        }
                     }
                 }
+            }
+            catch( System.Exception e )
+            {
+                LogUtil.writeLog(this.GetType(), LogType.WARNING, $"Error occured during execution of cycle {this._cycleCount}");
             }
         }
 

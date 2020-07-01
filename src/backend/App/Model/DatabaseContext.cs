@@ -239,9 +239,9 @@ namespace AuctionMaster.App.Model
 
                 entity.Property(e => e.Enabled).HasColumnName("ENABLED");
 
-                entity.Property(e => e.LastExecution)
-                    .HasColumnName("LAST_EXECUTION")
-                    .HasColumnType("datetime");
+                entity.Property(e => e.MaxTentatives)
+                    .HasColumnName("MAX_TENTATIVES")
+                    .HasDefaultValueSql("'3'");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -332,6 +332,8 @@ namespace AuctionMaster.App.Model
                     .HasColumnType("datetime");
 
                 entity.Property(e => e.Status).HasColumnName("STATUS");
+
+                entity.Property(e => e.Tentatives).HasColumnName("TENTATIVES");
 
                 entity.HasOne(d => d.ScheduledTaskNavigation)
                     .WithMany(p => p.ScheduledTaskLog)

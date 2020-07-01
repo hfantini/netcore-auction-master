@@ -21,6 +21,9 @@
 using AuctionMaster.App.Enumeration;
 using AuctionMaster.App.Exception;
 using AuctionMaster.App.Model;
+using AuctionMaster.App.Util;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using System;
@@ -53,10 +56,17 @@ namespace AuctionMaster.App.Service.Task
         // == VAR
 
         protected IServiceScopeFactory _scopeFactory;
+        protected IServiceScope _scope;
+        protected DatabaseContext _databaseContext;
         protected ScheduledTask _scheduledTask;
+        protected IDbContextTransaction _databaseTransaction;
+        protected ScheduledTaskLog _taskLog;
+        protected JObject _message;
         private ScheduledTaskState _state;
         private Task<Object> _task = null;
-        private CancellationTokenSource cancellationToken;
+        private CancellationTokenSource _cancellationToken;
+        protected bool _newTentative = false;
+        protected ScheduledTaskLogService _logService;
 
         // == CONSTRUCTOR(S)
         // ======================================================================
@@ -81,11 +91,20 @@ namespace AuctionMaster.App.Service.Task
 
             try
             {
+                if(this._state == ScheduledTaskState.ERROR)
+                {
+                    this._newTentative = true;
+                }
+                else
+                {
+                    this._newTentative = false;
+                }
+
                 this._state = ScheduledTaskState.RUNNING;
 
                 // == TASK LIFE-CYCLE EXECUTION
 
-                this.cancellationToken = new CancellationTokenSource();
+                this._cancellationToken = new CancellationTokenSource();
                 onStart();
 
                 // PARAMETER TREATMENT
@@ -104,7 +123,7 @@ namespace AuctionMaster.App.Service.Task
                     }
                 }
 
-                onExecute(param, this.cancellationToken.Token);
+                onExecute(param, this._cancellationToken.Token);
 
                 onFinish();
                 this._state = ScheduledTaskState.IDLE;
@@ -113,7 +132,7 @@ namespace AuctionMaster.App.Service.Task
             {
                 if( !(e is AuctionMasterTaskException) )
                 {
-                    e = new AuctionMasterTaskException(ExceptionType.FATAL, "An error ocurred during the task execution. Original Message:" + e.Message, e);
+                    e = new AuctionMasterTaskException(ExceptionType.FATAL, e.Message, e);
                 }
 
                 this._state = ScheduledTaskState.ERROR;
@@ -163,7 +182,7 @@ namespace AuctionMaster.App.Service.Task
         {
             if (this._state == ScheduledTaskState.RUNNING)
             {
-                this.cancellationToken.Cancel();
+                this._cancellationToken.Cancel();
             }
             else
             {
@@ -179,7 +198,45 @@ namespace AuctionMaster.App.Service.Task
         /// </summary>
         protected virtual void onStart()
         {
+            this._message = new JObject();
 
+            // == CREATES THE SCOPE & DATABASE CONTEXT
+
+            this._scope = this._scopeFactory.CreateScope();
+            this._databaseContext = this._scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
+            // == CREATES THE ENTRY OF THIS SCAN ON DATABASE
+
+            var currentTime = DateTime.Now;
+
+            this._databaseTransaction = this._databaseContext.Database.BeginTransaction();
+
+            // SCHEDULED_TASK_LOG
+
+            if (!this._newTentative)
+            {
+                this._taskLog = new ScheduledTaskLog();
+                this._taskLog.StartTime = currentTime;
+                this._taskLog.ScheduledTask = this._scheduledTask.Id;
+                this._databaseContext.ScheduledTaskLog.Add(this._taskLog);
+            }
+            else
+            {
+                this._taskLog = this._databaseContext.ScheduledTaskLog.Where(log => log.ScheduledTask == this._scheduledTask.Id).OrderByDescending(log => log.StartTime).FirstOrDefault();
+
+                if(this._taskLog == null)
+                {
+                    throw new AuctionMasterTaskException(ExceptionType.WARNING, "Last log not found");
+                }
+            }
+
+            this._databaseContext.SaveChanges();
+            this._databaseTransaction.Commit();
+
+            this._logService = new ScheduledTaskLogService(this.GetType(), this._taskLog);
+
+            this._logService.start();
+            this._logService.writeLine(LogType.INFO, $"Scheduled task [{this._scheduledTask.Name}] has started.", true);
         }
 
         /// <summary>
@@ -195,7 +252,20 @@ namespace AuctionMaster.App.Service.Task
         /// </summary>
         protected virtual void onFinish()
         {
+            // == WRITES LOG ABOUT THE EXECUTION AND UPDATE TASK DATA
 
+            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
+            this._taskLog.Status = 1;
+            this._taskLog.EndTime = DateTime.Now;
+
+            this._taskLog.Message = this._message.ToString();
+            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
+            this._databaseContext.SaveChanges();
+
+            this._scope.Dispose();
+
+            this._logService.writeLine(LogType.INFO, $"Scheduled task [{this._scheduledTask.Name}] has finished without errors. Message:\n{this._message.ToString()}", true);
+            this._logService.finish();
         }
 
         /// <summary>
@@ -204,7 +274,20 @@ namespace AuctionMaster.App.Service.Task
         /// <param name="e">Exception structure</param>
         protected virtual void onError(AuctionMasterTaskException e)
         {
-            Console.WriteLine("[ERROR]: " + e.Message);
+            // == WRITES LOG ABOUT THE ERROR AND UPDATE TASK DATA
+
+            this._taskLog.Status = 0;
+            this._taskLog.EndTime = DateTime.Now;
+            this._taskLog.Tentatives++;
+
+            this._taskLog.Message = this._message.ToString();
+            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
+            this._databaseContext.SaveChanges();
+
+            this._scope.Dispose();
+
+            this._logService.writeLine(LogType.ERROR, $"Scheduled task [{this._scheduledTask.Name}] has finished with errors (Tentative {this._taskLog.Tentatives}). Message:\n{this._message.ToString()}", true);
+            this._logService.finish();
         }
 
         // == GETTER(S) AND SETTER(S)
@@ -216,6 +299,7 @@ namespace AuctionMaster.App.Service.Task
         public ScheduledTaskState state
         {
             get { return this._state; }
+            set { this._state = value; }
         }
 
         /// <summary>
