@@ -1,7 +1,7 @@
 # World of Warcraft: Auction Master
 
-Author: Henrique Fantini
-Contact: contact@henriquefantini.com   
+### Protype
+Date: 2020/07/20
 
 -- X --
 
