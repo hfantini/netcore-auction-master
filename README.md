@@ -1,4 +1,4 @@
-# Auction Master
+# World of Warcraft: Auction Master
 
 Author: Henrique Fantini
 Contact: contact@henriquefantini.com   
