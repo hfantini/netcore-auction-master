@@ -217,6 +217,8 @@ namespace AuctionMaster.App.Service.Task
             {
                 this._taskLog = new ScheduledTaskLog();
                 this._taskLog.StartTime = currentTime;
+                this._taskLog.ScheduledTaskNavigation = this._scheduledTask;
+                this._databaseContext.Entry(this._taskLog.ScheduledTaskNavigation).State = EntityState.Unchanged;
                 this._taskLog.ScheduledTask = this._scheduledTask.Id;
                 this._databaseContext.ScheduledTaskLog.Add(this._taskLog);
             }
@@ -264,7 +266,7 @@ namespace AuctionMaster.App.Service.Task
 
             this._scope.Dispose();
 
-            this._logService.writeLine(LogType.INFO, $"Scheduled task [{this._scheduledTask.Name}] has finished without errors. Message:\n{this._message.ToString()}", true);
+            this._logService.writeLine(LogType.SUCCESS, $"Scheduled task [{this._scheduledTask.Name}] has finished without errors. Details: {this._message.ToString()}", true);
             this._logService.finish();
         }
 
@@ -286,7 +288,7 @@ namespace AuctionMaster.App.Service.Task
 
             this._scope.Dispose();
 
-            this._logService.writeLine(LogType.ERROR, $"Scheduled task [{this._scheduledTask.Name}] has finished with errors (Tentative {this._taskLog.Tentatives}). Message:\n{this._message.ToString()}", true);
+            this._logService.writeLine(LogType.ERROR, $"Scheduled task [{this._scheduledTask.Name}] has finished with errors (Tentative {this._taskLog.Tentatives}). Details: {this._message.ToString()}", true);
             this._logService.finish();
         }
 

@@ -49,20 +49,18 @@ namespace AuctionMaster.App.Service.Task
 
         // == CONST
         private readonly IBlizzardAuctionHouseService _blizzardAuctionHouseService;
+        private readonly IBlizzardItemService _blizzardItemService;
 
         // == VAR
-        private IServiceScope _scope;
-        private DatabaseContext _databaseContext;
-        private IDbContextTransaction _dbTransaction;
-        private ScheduledTaskLog _taskLog;
         private int _auctionScanCount;
 
         // == CONSTRUCTOR(S)
         // ======================================================================
 
-        public AuctionHouseScanTask(IServiceScopeFactory scopeFactory, ScheduledTask scheduledTask, IBlizzardAuctionHouseService blizzardAuctionHouseService) : base(scopeFactory, scheduledTask)
+        public AuctionHouseScanTask(IServiceScopeFactory scopeFactory, ScheduledTask scheduledTask, IBlizzardAuctionHouseService blizzardAuctionHouseService, IBlizzardItemService blizzardItemService) : base(scopeFactory, scheduledTask)
         {
             this._blizzardAuctionHouseService = blizzardAuctionHouseService;
+            this._blizzardItemService = blizzardItemService;
         }
 
         // == METHOD(S)
@@ -73,47 +71,86 @@ namespace AuctionMaster.App.Service.Task
             base.onStart();
 
             this._auctionScanCount = 0;
-
-            // == CREATES THE SCOPE & DATABASE CONTEXT
-
-            this._scope = this._scopeFactory.CreateScope();
-            this._databaseContext = this._scope.ServiceProvider.GetRequiredService<DatabaseContext>();
-
-            // == CREATES THE ENTRY OF THIS SCAN ON DATABASE
-
-            var currentTime = DateTime.Now;
-
-            this._dbTransaction = this._databaseContext.Database.BeginTransaction();
-
-            // SCHEDULED_TASK_LOG
-
-            this._taskLog = new ScheduledTaskLog();
-            this._taskLog.StartTime = currentTime;
-            this._taskLog.ScheduledTask = this._scheduledTask.Id;
-            this._databaseContext.ScheduledTaskLog.Add(this._taskLog);
-
-            this._databaseContext.SaveChanges();
-
-            this._dbTransaction.Commit();
-            this._dbTransaction.Dispose();
-            this._dbTransaction = null;
         }
 
         private void fullAuctionHouseScan(int connectedRealmID)
         {
             ConnectedRealm connectedRealm = this._databaseContext.ConnectedRealm.Find(connectedRealmID);
 
-            if(connectedRealm == null)
+            if(connectedRealm != null)
             {
                 Task<JObject> auctionTask = this._blizzardAuctionHouseService.getAuctionList(connectedRealm);
                 auctionTask.Wait();
 
                 JObject auctionList = auctionTask.Result;
-                int value = auctionList.Count;
 
                 // == PROCESSING AUCTION HOUSE INFORMATION
 
-                ToString();
+                foreach( JObject requestAuction in auctionList.Value<JArray>("auctions") )
+                {
+                    // == ITEM TREATMENT
+
+                    JObject auctionItem = requestAuction.Value<JObject>("item");
+                    Item item = this._databaseContext.Item.Find(auctionItem.Value<int>("id"));
+
+                    if(item == null)
+                    {
+                        this._logService.writeLine(LogType.INFO, $"Requesting information about item {requestAuction.Value<JObject>("item") }");
+
+                        // GET ITEM INFORMATION FROM BLIZZARD
+
+                        Task<JObject> itemTask = this._blizzardItemService.getItem( auctionItem.Value<int>("id") );
+                        itemTask.Wait();
+
+                        auctionItem = itemTask.Result;
+
+                        // CREATES THE ITEM IN THE DATABASE
+
+                        item = new Item();
+                        item.Id = auctionItem.Value<int>("id");
+                        item.Name = auctionItem.Value<string>("name");
+                        item.Quality = 1;
+                        item.Stackable = ( auctionItem.Value<Boolean>("is_stackable") == true ? Convert.ToSByte(1) : Convert.ToSByte(0) );
+                        //item.Levelreq;
+                        //item.PurchasePrice;
+                        //item.SellPrice;
+
+                        this._logService.writeLine(LogType.INFO, $"Item ( {item.Id} ) information obtained: {item.Name}");
+                    }
+                    else
+                    {
+                        this._databaseContext.Entry(item).State = EntityState.Modified;
+                    }
+
+                    // == CREATE AUCTION ENTRY
+
+                    Auction auction = new Auction();
+                    auction.ScheduledTaskLog = this._taskLog.Id;
+                    auction.ItemNavigation = item;
+                    auction.ConnectedRealm = connectedRealm.Id;
+
+                    if (requestAuction.ContainsKey("buyout"))
+                    {
+                        auction.Buyout = requestAuction.Value<long>("buyout");
+                    }
+
+                    if (requestAuction.ContainsKey("unit_price"))
+                    {
+                        auction.UnitPrice = requestAuction.Value<long>("unit_price");
+                    }
+
+                    if(requestAuction.ContainsKey("bid"))
+                    {
+                        auction.Bid = requestAuction.Value<long>("bid");
+                    }
+                    
+                    auction.Quantity = requestAuction.Value<int>("quantity");
+
+                    this._databaseContext.Auction.Add(auction);
+                    this._databaseContext.SaveChanges();
+
+                    this._logService.writeLine(LogType.INFO, $"Auction ( {auction.Id} - {auction.ItemNavigation.Name} ) has been inserted.");
+                }
             }
             else
             {
@@ -138,40 +175,16 @@ namespace AuctionMaster.App.Service.Task
 
         protected override void onFinish()
         {
+            this._message.Add("auctionCount", this._auctionScanCount);
+
             base.onFinish();
-
-            // == WRITES LOG ABOUT THE EXECUTION AND UPDATE TASK DATA
-
-            var taskLog = this._databaseContext.ScheduledTaskLog.Attach(this._taskLog);
-            this._taskLog.Status = 1;
-            this._taskLog.EndTime = DateTime.Now;
-
-            JObject message = new JObject();
-            message.Add("auctionCount", this._auctionScanCount);
-
-            this._taskLog.Message = message.ToString();
-            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
-            this._databaseContext.SaveChanges();
-
-            this._scope.Dispose();
         }
 
         protected override void onError(AuctionMasterTaskException e)
         {
+            this._message.Add("error", e.Message);
+
             base.onError(e);
-
-            // == WRITES LOG ABOUT THE ERROR AND UPDATE TASK DATA
-            this._taskLog.Status = 1;
-            this._taskLog.EndTime = DateTime.Now;
-
-            JObject message = new JObject();
-            message.Add("error", e.Message);
-
-            this._taskLog.Message = message.ToString();
-            this._databaseContext.Entry(this._taskLog).State = EntityState.Modified;
-            this._databaseContext.SaveChanges();
-
-            this._scope.Dispose();
         }
 
         // == EVENT(S)

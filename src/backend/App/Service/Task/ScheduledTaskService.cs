@@ -49,6 +49,7 @@ namespace AuctionMaster.App.Service.Task
         // == CONST
         private readonly IBlizzardRealmService _blizzardRealmService;
         private readonly IBlizzardAuctionHouseService _blizzardAuctionHouseService;
+        private readonly IBlizzardItemService _blizzardItemService;
 
         // == VAR
         private Timer _timer;
@@ -59,12 +60,13 @@ namespace AuctionMaster.App.Service.Task
         // == CONSTRUCTOR(S)
         // ======================================================================
 
-        public ScheduledTaskService(IServiceScopeFactory scopeFactory, IBlizzardRealmService blizzardRealmService, IBlizzardAuctionHouseService blizzardAuctionHouseService)
+        public ScheduledTaskService(IServiceScopeFactory scopeFactory, IBlizzardRealmService blizzardRealmService, IBlizzardAuctionHouseService blizzardAuctionHouseService, IBlizzardItemService blizzardItemService)
         {
             this._scopeFactory = scopeFactory;
             this._scheduledTasks = new Dictionary<int, GenericScheduledTask>();
             this._blizzardRealmService = blizzardRealmService;
             this._blizzardAuctionHouseService = blizzardAuctionHouseService;
+            this._blizzardItemService = blizzardItemService;
 
             LogUtil.writeLog(this.GetType(), LogType.INFO, "SCHEDULED TASK SERVICE CREATED");
         }
@@ -153,7 +155,7 @@ namespace AuctionMaster.App.Service.Task
                         break;
 
                     case 2:
-                        taskInstance = new AuctionHouseScanTask(this._scopeFactory, task, this._blizzardAuctionHouseService);
+                        taskInstance = new AuctionHouseScanTask(this._scopeFactory, task, this._blizzardAuctionHouseService, this._blizzardItemService);
                         break;
                 }
 

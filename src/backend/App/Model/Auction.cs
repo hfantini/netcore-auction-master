@@ -9,8 +9,9 @@ namespace AuctionMaster.App.Model
         public int ScheduledTaskLog { get; set; }
         public int ConnectedRealm { get; set; }
         public int Item { get; set; }
-        public int Buyout { get; set; }
-        public int Bid { get; set; }
+        public long? Buyout { get; set; }
+        public long? UnitPrice { get; set; }
+        public long? Bid { get; set; }
         public int Quantity { get; set; }
 
         public virtual ConnectedRealm ConnectedRealmNavigation { get; set; }

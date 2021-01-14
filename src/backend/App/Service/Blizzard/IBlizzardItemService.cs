@@ -18,6 +18,10 @@
 // == IMPORTS
 // ==============================================================================
 
+using AuctionMaster.App.Model;
+using Microsoft.Extensions.Configuration;
+using Microsoft.VisualBasic.CompilerServices;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,17 +30,25 @@ using System.Threading.Tasks;
 // == NAMESPACE
 // ==============================================================================
 
-namespace AuctionMaster.App.Enumeration
+namespace AuctionMaster.App.Service.Blizzard
 {
-    // == CLASS
+    // == INTERFACE
     // ==========================================================================
-
-    public enum LogType
+    
+    /// <summary>
+    /// A service who handles requests related with World of Warcraft information
+    /// </summary>
+    public interface IBlizzardItemService
     {
-        INFO = 1,
-        SUCCESS = 2,
-        WARNING = 3,
-        ERROR = 4
-        
+        // == METHOD(S)
+        // ======================================================================
+
+        public Task<JObject> getItem(int id);
+
+        // == EVENT(S)
+        // ======================================================================
+
+        // == GETTER(S) AND SETTER(S)
+        // ======================================================================
     }
 }

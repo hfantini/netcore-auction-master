@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 // == NAMESPACE
@@ -96,6 +97,10 @@ namespace AuctionMaster.App.Util
                     Console.ForegroundColor = ConsoleColor.Blue;
                 break;
 
+                case LogType.SUCCESS:
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    break;
+
                 case LogType.WARNING:
                     Console.ForegroundColor = ConsoleColor.Yellow;
                 break;
@@ -105,7 +110,7 @@ namespace AuctionMaster.App.Util
                 break;
             }
 
-            Console.WriteLine( LogUtil.createLog(origin, type, message) );
+            Console.WriteLine( "  " + Regex.Replace(LogUtil.createLog(origin, type, message), @"\t|\n|\r", "") );
             Console.ResetColor();
 
             return retvalue;
@@ -116,17 +121,17 @@ namespace AuctionMaster.App.Util
             Console.WriteLine(
 $@"
 
-█████╗ ██╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗ 
-██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗
-███████║██║   ██║██║        ██║   ██║██║   ██║██╔██╗ ██║    ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝
-██╔══██║██║   ██║██║        ██║   ██║██║   ██║██║╚██╗██║    ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗
-██║  ██║╚██████╔╝╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║
-╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
+  █████╗ ██╗   ██╗ ██████╗████████╗██╗ ██████╗ ███╗   ██╗    ███╗   ███╗ █████╗ ███████╗████████╗███████╗██████╗ 
+  ██╔══██╗██║   ██║██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║    ████╗ ████║██╔══██╗██╔════╝╚══██╔══╝██╔════╝██╔══██╗
+  ███████║██║   ██║██║        ██║   ██║██║   ██║██╔██╗ ██║    ██╔████╔██║███████║███████╗   ██║   █████╗  ██████╔╝
+  ██╔══██║██║   ██║██║        ██║   ██║██║   ██║██║╚██╗██║    ██║╚██╔╝██║██╔══██║╚════██║   ██║   ██╔══╝  ██╔══██╗
+  ██║  ██║╚██████╔╝╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║    ██║ ╚═╝ ██║██║  ██║███████║   ██║   ███████╗██║  ██║
+  ╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝    ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝
 
-Version: {typeof(LogUtil).Assembly.GetName().Version.ToString()}
-Created by Henrique Fantini (contact@henriquefantini.com)
+  Version: {typeof(LogUtil).Assembly.GetName().Version.ToString()}
+  Created by Henrique Fantini (contact@henriquefantini.com)
 
------------- X --------------
+  ------------ X --------------
 
 "
             );

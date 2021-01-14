@@ -78,7 +78,6 @@ namespace AuctionMaster.App.Service.Task
         {
             base.onExecute(param, cancellationToken);
 
-            throw new System.Exception("ferrou de vez");
             // OBTAIN A LIST OF CONNECTED REALM REGION
 
             List<ConnectedRealmRegion> realmRegions = this._databaseContext.ConnectedRealmRegion.OrderBy(crr => crr.Id).ToList<ConnectedRealmRegion>();
@@ -130,6 +129,8 @@ namespace AuctionMaster.App.Service.Task
                         this._databaseContext.Entry(cRealm).State = EntityState.Modified;
                     }
 
+                    JObject realmChanges = new JObject();
+
                     foreach (JObject cRealmChildren in connectedRealmInfo.Value<JArray>("realms").Children())
                     {
                         Realm realm = this._databaseContext.Realm.Find(cRealmChildren.Value<int>("id") );
@@ -143,6 +144,8 @@ namespace AuctionMaster.App.Service.Task
                             realm.Timezone = cRealmChildren.Value<String>("timezone");
                             realm.Category = cRealmChildren.Value<String>("category");
                             this._databaseContext.Entry(realm).State = EntityState.Added;
+
+                            realmChanges.Add(realm.Name, "ADDED");
                         }
                         else
                         {
@@ -151,19 +154,25 @@ namespace AuctionMaster.App.Service.Task
                             realm.Timezone = cRealmChildren.Value<String>("timezone");
                             realm.Category = cRealmChildren.Value<String>("category");
                             this._databaseContext.Entry(realm).State = EntityState.Modified;
+
+                            realmChanges.Add(realm.Name, "UPDATED");
                         }
 
                         cRealm.Realm.Add(realm);
                         this._RealmCount++;
                     }
 
-                    if(!update)
+                    if (!update)
                     {
                         this._databaseContext.ConnectedRealm.Add(cRealm);
+
+                        this._logService.writeLine(LogType.INFO, $"Connected Realm ({cRealm.Id}) from US has been added: \n{realmChanges.ToString()}");
                     }
                     else
                     {
                         this._databaseContext.ConnectedRealm.Update(cRealm);
+
+                        this._logService.writeLine(LogType.INFO, $"Connected Realm ({cRealm.Id}) from US has been updated: \n{realmChanges.ToString()}");
                     }
 
                     this._databaseContext.SaveChanges();

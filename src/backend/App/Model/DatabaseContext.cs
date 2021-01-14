@@ -53,9 +53,7 @@ namespace AuctionMaster.App.Model
 
                 entity.Property(e => e.Id).HasColumnName("ID");
 
-                entity.Property(e => e.Bid)
-                    .HasColumnName("BID")
-                    .HasDefaultValueSql("'-1'");
+                entity.Property(e => e.Bid).HasColumnName("BID");
 
                 entity.Property(e => e.Buyout).HasColumnName("BUYOUT");
 
@@ -66,6 +64,8 @@ namespace AuctionMaster.App.Model
                 entity.Property(e => e.Quantity).HasColumnName("QUANTITY");
 
                 entity.Property(e => e.ScheduledTaskLog).HasColumnName("SCHEDULED_TASK_LOG");
+
+                entity.Property(e => e.UnitPrice).HasColumnName("UNIT_PRICE");
 
                 entity.HasOne(d => d.ConnectedRealmNavigation)
                     .WithMany(p => p.Auction)
@@ -135,7 +135,6 @@ namespace AuctionMaster.App.Model
                 entity.Property(e => e.Id).HasColumnName("ID");
 
                 entity.Property(e => e.Icon)
-                    .IsRequired()
                     .HasColumnName("ICON")
                     .HasColumnType("varchar(300)")
                     .HasCharSet("utf8")

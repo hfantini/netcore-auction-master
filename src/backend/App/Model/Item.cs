@@ -15,9 +15,9 @@ namespace AuctionMaster.App.Model
         public int Quality { get; set; }
         public string Icon { get; set; }
         public sbyte Stackable { get; set; }
-        public int Levelreq { get; set; }
-        public int PurchasePrice { get; set; }
-        public int SellPrice { get; set; }
+        public int? Levelreq { get; set; }
+        public int? PurchasePrice { get; set; }
+        public int? SellPrice { get; set; }
 
         public virtual ItemQuality QualityNavigation { get; set; }
         public virtual ICollection<Auction> Auction { get; set; }

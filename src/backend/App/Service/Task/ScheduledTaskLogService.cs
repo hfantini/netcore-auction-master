@@ -65,7 +65,8 @@ namespace AuctionMaster.App.Service.Task
             try
             {
                 // == DEFINE THE FINAL PATH 
-                this._path = AppDomain.CurrentDomain.BaseDirectory + $"\\log\\{this._log.GetType().Name}/";
+                String taskName = this._log.ScheduledTaskNavigation.Name.Replace(" ", "_");
+                this._path = AppDomain.CurrentDomain.BaseDirectory + $"\\log\\{taskName}/";
 
                 // == CHECKS THE EXISTENCE OF DIRECTORY
 
@@ -76,7 +77,7 @@ namespace AuctionMaster.App.Service.Task
 
                 // == CREATES THE FILE NAME
 
-                String fileName = $"{this._log.GetType().Name}_{this._log.Id}_{DateTimeUtil.getDateYYYYMMDD(this._log.StartTime, "-", "", "")}.txt";
+                String fileName = $"{taskName}_{this._log.Id}_{DateTimeUtil.getDateYYYYMMDD(this._log.StartTime, "-", "", "")}.txt";
 
                 // == CREATES THE STREAM
 
